@@ -66,26 +66,41 @@ fichero_audio = list_XML[5]['path']
 # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
 my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-my_socket.connect((ua_ip, int(ua_port)))
+my_socket.connect((proxy_ip, int(proxy_port))) #conectando con proxy
 
 # def log
 
+
 # Si recibimos una cosa u otra
-if metodo == 'REGISTER':
+if metodo == "REGISTER":
     Peticion = metodo + " sip:" + username + ":" + ua_port
-    Peticion += " SIP/2.0" + b"\r\n" + "Expires: " + option + "\r\n"
-elif metodo == 'INVITE':
+    Peticion += " SIP/2.0" + "\r\n" + "Expires: " + option + "\r\n"
+    # hora y lo que pasa en el log: enviando desde..
+    # log
+
+elif metodo == "INVITE":
     Peticion = metodo + " sip:" + option + " SIP/2.0 \r\n\r\n"
     Peticion += "Content-Type: application/sdp \r\n"
     Peticion += "v=0 \r\n" + "o=" + username + " " + ua_ip + "\r\n"
     Peticion += "s=misesion \r\n" + "t=0 \r\n"
     Peticion += "m=audio " + audiortp_port + " RTP \r\n\r\n"
+    if datos_rcv[1] == "100" and datos_rcv[4] == "180" and datos_rcv[7] == "200":
+        metodo = "ACK"
+        Ip_Serv = datos_rcv[13]
+        Port_Serv = datos_rcv[17]
+        Peticion = metodo + " sip:" + option + " SIP/2.0 \r\n"
+        print("Enviando: ", Peticion)
+        my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n')
+        aEjecutar = "mp32rtp -i " + Ip_Serv + " -p " + Port_Serv + ' < ' + fichero_audio
+        print("Vamos a ejecutar", aEjecutar)
+        os.system(aEjecutar)
+        # hora y lo que pasa en el log: enviando desde..
+        # log
 elif metodo == 'BYE':
     Peticion = metodo + " sip:" + option + " SIP/2.0 \r\n\r\n"
+    # hora y lo que pasa en el log: enviando desde..
+    # log
 
-
-# hora y lo que pasa en el log: enviando desde..
-# log
 print("Enviando: ", Peticion)
 my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n\r\n')
 data = my_socket.recv(1024)
@@ -95,21 +110,6 @@ datos_rcv = data.decode('utf-8').split()
 # hora y lo que pasa en el log: recibido desde..
 # log
 
-
-# if metodo == "REGISTER":
-if metodo == "INVITE":
-    if datos_rcv[1] == "100" and datos_rcv[4] == "180" and datos_rcv[7] == "200":
-        metodo = "ACK"
-        Ip_Serv = datos_rcv[13]
-        Port_Serv = datos_rcv[17]
-        Peticion = metodo + " sip: " + option + " SIP/2.0 \r\n"
-        print("Enviando: ", Peticion)
-        my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n')
-        aEjecutar = "mp32rtp -i " + Ip_Serv + " -p " + Port_Serv + ' < ' + fichero_audio
-        print("Vamos a ejecutar", aEjecutar)
-        os.system(aEjecutar)
-        # hora y lo que pasa en el log: enviando desde..
-        # log
 
 # Cerramos todo
 print("terminando socket...")
