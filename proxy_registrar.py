@@ -54,7 +54,7 @@ parser.setContentHandler(XMLHandler)
 parser.parse(open(config))
 list_XML = XMLHandler.get_tags() # XML a mi dicc
 name = list_XML[0]['name']
-proxy_ip = list_XML[0]['ip']
+proxy_ip = list_XML[0]['ip'] # extracción de parámetros de XML
 proxy_port = list_XML[0]['puerto']
 
 # def log
@@ -67,7 +67,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
 
     def register2json(self):
         """
-        Creacion fichero json con los datos de un diccionario
+        Creacion fichero json con los datos del diccionario de usuarios
         """
         json.dump(self.DiccServ, open('registered.json', 'w'))
 
@@ -83,7 +83,9 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
             
 
     def delete(self):
-
+        """
+        Borrar usuarios por el tiempo de expiración
+        """
         lista = []
         #print(self.DiccServ)
         for clave in self.DiccServ:
@@ -96,7 +98,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
             del self.DiccServ[usuario]
             
 
-    Dicc = {}
+    Dicc = {} # dicc de nonce
     dicc_rtp = {'Ip_Client':'', 'Port_CLient': 0}
     
     def handle(self):
@@ -113,7 +115,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                 break
             print("El cliente nos manda: " + petc_meth)
             lista = petc_meth.split()
-            print(lista)
+            #print(lista)
             metodo = lista[0]
             if metodo == "REGISTER":
                 address_client = lista[1].split(':')[1]
@@ -134,10 +136,15 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     # log hora y evento
                     if expires == '0':
                         del self.DiccServ[address]
+                if len(lista) == 8:
                     self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
+                    #log evento y hora
                     self.delete()
                     self.register2json()
-                
+            if metodo == "INVITE":
+                #print(lista)
+                address_client = lista[1].split(':')[1]
+                print(self.DiccServ)
 
 
 if __name__ == "__main__":

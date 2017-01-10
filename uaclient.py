@@ -54,7 +54,7 @@ XMLHandler = FicheroXML()
 parser.setContentHandler(XMLHandler)
 parser.parse(open(config))
 list_XML = XMLHandler.get_tags()
-# print(list_XML)
+# extracción de parámetros de fichero XML
 username = list_XML[0]['username']
 ua_ip = list_XML[1]['ip']
 ua_port = list_XML[1]['puerto']
@@ -75,14 +75,24 @@ my_socket.connect((proxy_ip, int(proxy_port))) #conectando con proxy
 if metodo == "REGISTER":
     Peticion = metodo + " sip:" + username + ":" + ua_port
     Peticion += " SIP/2.0" + "\r\n" + "Expires: " + option + "\r\n"
-    datos = my_socket.recv(1024)
+    print("Enviando: ", Peticion)
+    my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n\r\n')
+    data = my_socket.recv(1024)
+    print('Recibido -- ', data.decode('utf-8'))
     datos_rcv = data.decode('utf-8').split()
     if datos_rcv[1] == "401":
         Peticion = metodo + " sip:" + username + ":" + ua_port
         Peticion += " SIP/2.0" + "\r\n" + "Expires: " + option + "\r\n"
-        Peticion += "Authoriaztion: Digest response=" + "123123212312321212123"
-    # hora y lo que pasa en el log: enviando desde..
-    # log
+        Peticion += "Authorization: Digest response=" + "123123212312321212123 \r\n"
+        print("Enviando: ", Peticion)
+        my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n\r\n')
+        # hora y lo que pasa en el log: enviando desde..
+        # log
+        data = my_socket.recv(int(proxy_port))
+        print('Recibido -- ', data.decode('utf-8'))
+        datos_rcv = data.decode('utf-8').split()
+        # hora y lo que pasa en el log: enviando desde..
+        # log
 
 elif metodo == "INVITE":
     Peticion = metodo + " sip:" + option + " SIP/2.0 \r\n\r\n"
@@ -90,6 +100,10 @@ elif metodo == "INVITE":
     Peticion += "v=0 \r\n" + "o=" + username + " " + ua_ip + "\r\n"
     Peticion += "s=misesion \r\n" + "t=0 \r\n"
     Peticion += "m=audio " + audiortp_port + " RTP \r\n\r\n"
+    print("Enviando: ", Peticion)
+    my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n')
+    data = my_socket.recv(1024)
+    datos_rcv = data.decode('utf-8').split()
     if datos_rcv[1] == "100" and datos_rcv[4] == "180" and datos_rcv[7] == "200":
         metodo = "ACK"
         Ip_Serv = datos_rcv[13]
@@ -97,24 +111,25 @@ elif metodo == "INVITE":
         Peticion = metodo + " sip:" + option + " SIP/2.0 \r\n"
         print("Enviando: ", Peticion)
         my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n')
-        aEjecutar = "mp32rtp -i " + Ip_Serv + " -p " + Port_Serv + ' < ' + fichero_audio
+        aEjecutar = "mp32rtp -i " + Ip_Serv + " -p " + Port_Serv + ' < '
+        aEjecutar += fichero_audio
         print("Vamos a ejecutar", aEjecutar)
         os.system(aEjecutar)
+        my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n\r\n')
+        data = my_socket.recv(1024)
+        print('Recibido -- ', data.decode('utf-8'))
+        datos_rcv = data.decode('utf-8').split()
         # hora y lo que pasa en el log: enviando desde..
         # log
 elif metodo == 'BYE':
     Peticion = metodo + " sip:" + option + " SIP/2.0 \r\n\r\n"
-    # hora y lo que pasa en el log: enviando desde..
+    print("Enviando: ", Peticion)
+    my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n\r\n')
+    data = my_socket.recv(1024)
+    print('Recibido -- ', data.decode('utf-8'))
+    datos_rcv = data.decode('utf-8').split()
+    # hora y lo que pasa en el log: recibido desde..
     # log
-
-print("Enviando: ", Peticion)
-my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n\r\n')
-data = my_socket.recv(1024)
-
-print('Recibido -- ', data.decode('utf-8'))
-datos_rcv = data.decode('utf-8').split()
-# hora y lo que pasa en el log: recibido desde..
-# log
 
 
 # Cerramos todo
