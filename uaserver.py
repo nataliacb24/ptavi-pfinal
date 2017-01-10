@@ -72,15 +72,15 @@ class ServerHandler(socketserver.DatagramRequestHandler):
 
         IP_Client = self.client_address[0]
         Port_Client = self.client_address[1]
-        print("IP: ", IP_Client)
-        print("Port: ", Port_Client)
+        #print("IP: ", IP_Client)
+        #print("Port: ", Port_Client)
         while 1:
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
             petc_meth = line.decode('utf-8')
             if not petc_meth:
                 break
-            print("El cliente nos manda: " + petc_meth)
+            print("Proxyregistrar nos manda: " + petc_meth)
             lista = petc_meth.split()
             #print(lista)
             metodo = lista[0]
