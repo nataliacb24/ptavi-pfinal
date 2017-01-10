@@ -75,6 +75,12 @@ my_socket.connect((proxy_ip, int(proxy_port))) #conectando con proxy
 if metodo == "REGISTER":
     Peticion = metodo + " sip:" + username + ":" + ua_port
     Peticion += " SIP/2.0" + "\r\n" + "Expires: " + option + "\r\n"
+    datos = my_socket.recv(1024)
+    datos_rcv = data.decode('utf-8').split()
+    if datos_rcv[1] == "401":
+        Peticion = metodo + " sip:" + username + ":" + ua_port
+        Peticion += " SIP/2.0" + "\r\n" + "Expires: " + option + "\r\n"
+        Peticion += "Authoriaztion: Digest response=" + "123123212312321212123"
     # hora y lo que pasa en el log: enviando desde..
     # log
 

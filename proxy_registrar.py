@@ -6,6 +6,8 @@ import socket
 import socketserver
 import sys
 import os
+import json
+import time
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
@@ -59,7 +61,42 @@ proxy_port = list_XML[0]['puerto']
 
 
 class SIPRegisterHandler(socketserver.DatagramRequestHandler):
-    
+
+
+    DiccServ = {}
+
+    def register2json(self):
+        """
+        Creacion fichero json con los datos de un diccionario
+        """
+        json.dump(self.DiccServ, open('registered.json', 'w'))
+
+    def json2register(self):
+        """
+        Comprobacion del fichero json
+        """
+        try:
+            with open("register.json", 'r') as fichjson:
+                self.DiccServ = json.load(fichjson)
+        except:
+            pass
+            
+
+    def delete(self):
+
+        lista = []
+        #print(self.DiccServ)
+        for clave in self.DiccServ:
+            time_now = self.DiccServ[clave][-1]
+            #print(time_now)
+            time_strp = time.strptime(time_now, '%Y-%m-%d %H:%M:%S')
+            if time_strp <= time.gmtime(time.time()):
+                lista.append(clave)
+        for usuario in lista:
+            del self.DiccServ[usuario]
+            
+
+    Dicc = {}
     dicc_rtp = {'Ip_Client':'', 'Port_CLient': 0}
     
     def handle(self):
@@ -80,15 +117,31 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
             metodo = lista[0]
             if metodo == "REGISTER":
                 address_client = lista[1].split(':')[1]
-                print(address_client)
                 port_client = lista[1].split(':')[2]
-                print(port_client)
                 expires = lista[4]
+                nonce = "89898989897898989898989"
+                if len(lista) == 5:
+                    time_now = int(time.time()) + int(expires)
+                    time_gm = time.gmtime(time_now)
+                    time_exp = time.strftime('%Y-%m-%d %H:%M:%S', time_gm)
+                    self.DiccServ[address_client] = [str(IP_Client), port_client, expires,
+                                                str(time_exp)]
+                    Peticion = "SIP/2.0 401 Unauthorized" + "\r\n"
+                    Peticion += "WWW Authenticate: Digest nonce=" + str(nonce)
+                    self.wfile.write(bytes(Peticion, 'utf-8') + b"\r\n")
+                    self.Dicc[address_client] = nonce
+                    time_exp = time.time()
+                    # log hora y evento
+                    if expires == '0':
+                        del self.DiccServ[address]
+                    self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
+                    self.delete()
+                    self.register2json()
                 
 
 
 if __name__ == "__main__":
 
     serv = socketserver.UDPServer((proxy_ip, int(proxy_port)), SIPRegisterHandler)
-    print("Server MiServidorBingBang listening at port 5555...")
+    print("Server MiServidorBingBang listening at port 5555... \r\n")
     serv.serve_forever()
