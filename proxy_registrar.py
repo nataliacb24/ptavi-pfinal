@@ -8,6 +8,7 @@ import sys
 import os
 import json
 import time
+import hashlib
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
@@ -56,8 +57,28 @@ list_XML = XMLHandler.get_tags() # XML a mi dicc
 name = list_XML[0]['name']
 proxy_ip = list_XML[0]['ip'] # extracción de parámetros de XML
 proxy_port = list_XML[0]['puerto']
+fichlog = list_XML[2]['path']
 
-# def log
+
+def log(formato, hora, evento):
+    fich_log = open(fichlog, 'a')
+    formato = '%Y%m%d%H%M%S'
+    hora = time.gmtime(hora)
+    forma_hora = fich_log.write(time.strftime(formato, hora))
+    evento = evento.replace('\r\n', ' ')
+    fich_log.write(evento + '\r\n')
+    fich_log.close()
+
+
+#def password(dircc_user):
+#    fich = open("passwords")
+#    datos = fich.readlines()
+#    for linea in datos:
+#        if linea != "":
+#            user = linea.split(" ")
+#           if user[0] == dircc_user:
+#              passwd = user[1]
+# return passwd
 
 
 class SIPRegisterHandler(socketserver.DatagramRequestHandler):
@@ -97,22 +118,9 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         for usuario in lista:
             del self.DiccUser[usuario]
             print('Borrando', usuario)
-
-
-    def SearchPasswd(self, dir_user):
-        fich_passwd = open("passwd.txt")
-        datos = fich_passwd.read()
-        passwd = ''
-        for linea in datos.split('\n'):
-            if linea != '':
-                user_fich = linea.split(" ")[0]
-                passwd_fich = linea.split(" ")[1]
-                if user_fich == dir_user:
-                    passwd = passwd_fich
-        return passwd
             
 
-    Dicc = {} # dicc de nonce
+    Dicc = {} # diccionario de nonce
     dicc_rtp = {'Ip_Client':'', 'Port_CLient': 0}
     
     def handle(self):
@@ -146,15 +154,33 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     Peticion += "WWW Authenticate: Digest nonce=" + str(nonce)
                     self.wfile.write(bytes(Peticion, 'utf-8') + b"\r\n")
                     self.Dicc[address_client] = nonce
-                    time_exp = time.time()
                     # log hora y evento
+                    hour = time.time()
+                    event = "Sent to " + IP_Client + ':' + str(Port_Client)
+                    event += ':' + Peticion + '\r\n'
+                    log('', hour, event)
                     if expires == '0':
-                        del self.DiccUser[address]
+                        del self.DiccUser[address_client]
                 if len(lista) == 8:
-                    self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
-                    #log evento y hora
+                    #contr = password(address_client)
+                    #contr = contr[:-1]
+                    #Autoriza = lista[7].split("=")[1]
+                    #nonce = self.Dicc[address_client]
+                    #nonce_bytes = bytes(str(nonce), 'utf-8')
+                    #contrsñ = bytes(contr, 'utf-8')
+                    #m = hashlib.md5()
+                    #m.update(contrsñ + nonce_bytes)
+                    #response = m.hexdigest()
+                    #if response == Autoriza:
+                    self.wfile.write(b"SIP/2.0 400 Bad Request" + b"\r\n\r\n")
+                    #log evento hora
+                    hour = time.time()
+                    event = "Sent to " + IP_Client + ':' + str(Port_Client)
+                    event += ':' + "SIP/2.0 200 OK" + '\r\n'
+                    log('', hour, event)
                     self.delete()
                     self.register2json()
+                    
             elif metodo == "INVITE" or "BYE":
                 self.register2json()
                 address_client = lista[1].split(':')[1]
@@ -176,9 +202,22 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     self.wfile.write(bytes(data.decode('utf-8'),
                                      'utf-8') + b'\r\n')
                     #log evento y hora
+                    hour = time.time()
+                    event = "Received from " + ua_ip + ':' + str(ua_port)
+                    event += ':' + data.decode('utf-8') + '\r\n'
+                    log('', hour, event)
+                    hour = time.time()
+                    event = " Sent to " + IP_Client + ':' + str(Port_Client)
+                    event += ':' + data.decode('utf-8') + '\r\n'
+                    log('', hour, event)
                 else:
                     #usuario no encontrado
                     self.wfile.write(b"SIP/2.0 404 User Not Found" + b"\r\n")
+                    #log evento y hora
+                    hour = time.time()
+                    event = " Sent to " + IP_Client + ':' + str(Port_Client)
+                    event += ':' + "SIP/2.0 404 User Not Found" + '\r\n'
+                    log('', hour, event)
             elif metodo == "ACK":
                 address_client = lista[1].split(':')[1]
                 if address_client in self.DiccUser:
@@ -196,16 +235,27 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     data = my_socket.recv(Port_Client)#leonard
                     self.wfile.write(bytes(data.decode('utf-8'),
                                      'utf-8') + b'\r\n')
-                    #log evento hora
+                    #log evento y hora
+                    hour = time.time()
+                    event = " Received from " + IP_Client + ':' + str(Port_Client)
+                    event += ':' + data.decode('utf-8') + '\r\n'
+                    log('', hour, event)
             elif metodo not in ["INVITE", "BYE", "ACK"]:
                 self.wfile.write(b"SIP/2.0 405 Method Not Allowed"
                                  + b"\r\n\r\n")
-                #log evento hora
+                #log evento y hora
+                hour = time.time()
+                event = " Sent to " + IP_Client + ':' + str(Port_Client)
+                event += ':' + "SIP/2.0 404 User Not Found" + '\r\n'
+                log('', hour, event)
             else:
                 self.wfile.write(b"SIP/2.0 400 Bad Request"
                                  + b"\r\n\r\n")
-                #log evento hora
-
+                #log evento y hora
+                hour = time.time()
+                event = " Sent to " + IP_Client + ':' + str(Port_Client)
+                event += ':' + "SIP/2.0 400 Bad Request" + '\r\n'
+                log('', hour, event)
 
 
 if __name__ == "__main__":

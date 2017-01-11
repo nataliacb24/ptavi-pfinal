@@ -5,6 +5,7 @@
 import socketserver
 import sys
 import os
+import time
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
@@ -59,9 +60,19 @@ ua_port = list_XML[1]['puerto']
 audiortp_port = list_XML[2]['puerto']
 proxy_ip = list_XML[3]['ip']
 proxy_port = list_XML[3]['puerto']
+fichlog = list_XML[4]['path']
 fichero_audio = list_XML[5]['path']
 
-#def log
+
+def log(formato, hora, evento):
+
+    fich_log = open(fichlog, 'a')
+    formato = '%Y%m%d%H%M%S'
+    hora = time.gmtime(hora)
+    formato_hora = fich_log.write(time.strftime(formato, hora))
+    evento = evento.replace('\r\n', ' ')
+    fich_log.write(evento + '\r\n')
+    fich_log.close()
 
 
 class ServerHandler(socketserver.DatagramRequestHandler):
@@ -86,8 +97,11 @@ class ServerHandler(socketserver.DatagramRequestHandler):
             metodo = lista[0]
             if metodo not in ["INVITE", "BYE", "ACK"]:
                 self.wfile.write(b"SIP/2.0 405 Method Not Allowed" + b"\r\n\r\n")
-                # hora y lo que ha pasado en log: enviando a
-                # log
+                #log evento y hora
+                hour = time.time()
+                event = " Sent to " + proxy_ip + ':' + str(proxy_port) + ':'
+                event += "SIP/2.0 405 Method Not Allowed" + '\r\n'
+                log('', hour, event)
             elif metodo == "INVITE":
                 self.dicc_rtp['Ip_Client'] = lista[7]
                 self.dicc_rtp['Port_Client'] = lista[11]
@@ -99,8 +113,11 @@ class ServerHandler(socketserver.DatagramRequestHandler):
                 Peticion += ua_ip + "\r\n" + "s=misesion \r\n" + "t=0 \r\n"
                 Peticion += "m=audio " + str(audiortp_port) + " RTP \r\n\r\n"
                 self.wfile.write(bytes(Peticion, 'utf-8'))
-                # hora y lo que ha pasado en log: enviando a
-                # log
+                #log evento y hora
+                hour = time.time()
+                event = " Sent to " + proxy_ip + ':' + str(proxy_port) + ':'
+                event += Peticion + '\r\n'
+                log('', hour, event)
             elif metodo == "ACK":
                 # print(self.dicc_rtp['Ip_Client'])
                 # print(self.dicc_rtp['Port_Client'])
@@ -112,8 +129,11 @@ class ServerHandler(socketserver.DatagramRequestHandler):
                 print("Fin RTP \r\n")
             elif metodo == "BYE":
                 self.wfile.write(b"SIP/2.0 200 OK" + b"\r\n\r\n")
-                # hora y lo que ha pasado en log: enviando a
-                # log
+                #log evento y hora
+                hour = time.time()
+                event = " Sent to " + proxy_ip + ':' + str(proxy_port) + ':'
+                event += "SIP/2.0 200 OK" + '\r\n'
+                log('', hour, event)
             else:
                 self.wfile.write(b"SIP/2.0 400 Bad Request" + b"\r\n\r\n")
 
