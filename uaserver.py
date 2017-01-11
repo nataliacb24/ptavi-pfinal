@@ -29,7 +29,6 @@ class FicheroXML(ContentHandler):
                           'log': ['path'],
                           'audio': ['path']}
 
-
     def startElement(self, name, attrs):
 
         dicc = {}
@@ -77,7 +76,7 @@ def log(formato, hora, evento):
 
 class ServerHandler(socketserver.DatagramRequestHandler):
 
-    dicc_rtp = {'Ip_Client':'', 'Port_CLient': 0}
+    dicc_rtp = {'Ip_Client': '', 'Port_CLient': 0}
 
     def handle(self):
 
@@ -96,7 +95,8 @@ class ServerHandler(socketserver.DatagramRequestHandler):
             #print(lista)
             metodo = lista[0]
             if metodo not in ["INVITE", "BYE", "ACK"]:
-                self.wfile.write(b"SIP/2.0 405 Method Not Allowed" + b"\r\n\r\n")
+                self.wfile.write(b"SIP/2.0 405 Method Not Allowed" +
+                                 b"\r\n\r\n")
                 #log evento y hora
                 hour = time.time()
                 event = " Sent to " + proxy_ip + ':' + str(proxy_port) + ':'
@@ -139,7 +139,6 @@ class ServerHandler(socketserver.DatagramRequestHandler):
 
 
 if __name__ == "__main__":
-
 
     serv = socketserver.UDPServer((ua_ip, int(ua_port)), ServerHandler)
     print("Listening \r\n")
