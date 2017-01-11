@@ -22,7 +22,6 @@ else:
 
 class FicheroXML(ContentHandler):
 
-
     def __init__(self):
 
         self.ListaDicc = []
@@ -30,9 +29,8 @@ class FicheroXML(ContentHandler):
                           'database': ['path', 'passwpath'],
                           'log': ['path']}
 
-
     def startElement(self, name, attrs):
-    
+
         dicc = {}
         # si existe la etiqueta en mi dicc
         if name in self.DiccAtrib:
@@ -53,9 +51,11 @@ parser = make_parser()
 XMLHandler = FicheroXML()
 parser.setContentHandler(XMLHandler)
 parser.parse(open(config))
-list_XML = XMLHandler.get_tags() # XML a mi dicc
+# XML a mi dicc
+list_XML = XMLHandler.get_tags()
+# extracción de parámetros de XML
 name = list_XML[0]['name']
-proxy_ip = list_XML[0]['ip'] # extracción de parámetros de XML
+proxy_ip = list_XML[0]['ip']
 proxy_port = list_XML[0]['puerto']
 fichlog = list_XML[2]['path']
 
@@ -83,7 +83,6 @@ def log(formato, hora, evento):
 
 class SIPRegisterHandler(socketserver.DatagramRequestHandler):
 
-
     DiccUser = {}
 
     def register2json(self):
@@ -101,7 +100,6 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                 self.DiccUser = json.load(fichjson)
         except:
             pass
-            
 
     def delete(self):
         """
@@ -118,11 +116,11 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         for usuario in lista:
             del self.DiccUser[usuario]
             print('Borrando', usuario)
-            
 
-    Dicc = {} # diccionario de nonce
-    dicc_rtp = {'Ip_Client':'', 'Port_CLient': 0}
-    
+    # diccionario de nonce
+    Dicc = {}
+    dicc_rtp = {'Ip_Client': '', 'Port_CLient': 0}
+
     def handle(self):
 
         IP_Client = self.client_address[0]
@@ -180,7 +178,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     log('', hour, event)
                     self.delete()
                     self.register2json()
-                    
+
             elif metodo == "INVITE" or "BYE":
                 self.register2json()
                 address_client = lista[1].split(':')[1]
@@ -195,9 +193,9 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     my_socket.setsockopt(socket.SOL_SOCKET,
                                          socket.SO_REUSEADDR, 1)
                     my_socket.connect((ua_ip,
-                                       int(ua_port))) #conectando con uasever(leo)
+                                       int(ua_port)))
                     my_socket.send(bytes(petc_meth, 'utf-8') + b'\r\n\r\n')
-                    data = my_socket.recv(ua_port)#leonard
+                    data = my_socket.recv(ua_port)
                     print(data.decode('utf-8'))
                     self.wfile.write(bytes(data.decode('utf-8'),
                                      'utf-8') + b'\r\n')
@@ -229,16 +227,16 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                                               socket.SOCK_DGRAM)
                     my_socket.setsockopt(socket.SOL_SOCKET,
                                          socket.SO_REUSEADDR, 1)
-                    my_socket.connect((ua_ip,
-                                       int(ua_port))) #conectando con uasever(leo)
+                    my_socket.connect((ua_ip, int(ua_port)))
                     my_socket.send(bytes(petc_meth, 'utf-8') + b'\r\n\r\n')
-                    data = my_socket.recv(Port_Client)#leonard
+                    data = my_socket.recv(Port_Client)
                     self.wfile.write(bytes(data.decode('utf-8'),
                                      'utf-8') + b'\r\n')
                     #log evento y hora
                     hour = time.time()
-                    event = " Received from " + IP_Client + ':' + str(Port_Client)
-                    event += ':' + data.decode('utf-8') + '\r\n'
+                    event = " Received from " + IP_Client + ':'
+                    event += str(Port_Client) + ':'
+                    event += data.decode('utf-8') + '\r\n'
                     log('', hour, event)
             elif metodo not in ["INVITE", "BYE", "ACK"]:
                 self.wfile.write(b"SIP/2.0 405 Method Not Allowed"
@@ -253,6 +251,6 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
 if __name__ == "__main__":
 
     serv = socketserver.UDPServer((proxy_ip, int(proxy_port)),
-                                   SIPRegisterHandler)
+                                  SIPRegisterHandler)
     print("Server MiServidorBingBang listening at port 5555... \r\n")
     serv.serve_forever()
