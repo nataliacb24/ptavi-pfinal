@@ -1,0 +1,16 @@
+He intentado hacer de varias formas posibles la función passwords 
+y que me funcionase pero finalmente me salía un erorr continuamente que no he
+sabido corregir, se que más o menos habría sido asi:
+#def password(dircc_user):
+#    fich = open("passwords")
+#    datos = fich.readlines()
+#    for linea in datos:
+#        if linea != "":
+#            user = linea.split(" ")
+#           if user[0] == dircc_user:
+#              passwd = user[1]
+# return passwd
+pero luego a la hora de ponerlo en el REGISTER en el proxy_registrar
+no he sido capaz de que funcionase bien.
+
+Otra cosa que no comprendo es por qué en la captura no se ven referenciados el INVITE ACK y BYE si en los terminales me salía todo correcto y, además, en la captura se ve que me responden correctamente a cada método y si que se refleja. He intentando buscar el fallo, pero no lo he encontrado, ya que además en la práctica seis si que me salio.
