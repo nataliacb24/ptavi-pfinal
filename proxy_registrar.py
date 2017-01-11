@@ -172,7 +172,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     #m.update(contrsñ + nonce_bytes)
                     #response = m.hexdigest()
                     #if response == Autoriza:
-                    self.wfile.write(b"SIP/2.0 400 Bad Request" + b"\r\n\r\n")
+                    self.wfile.write(b"SIP/2.0 200 OK" + b"\r\n\r\n")
                     #log evento hora
                     hour = time.time()
                     event = "Sent to " + IP_Client + ':' + str(Port_Client)
@@ -247,14 +247,6 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                 hour = time.time()
                 event = " Sent to " + IP_Client + ':' + str(Port_Client)
                 event += ':' + "SIP/2.0 404 User Not Found" + '\r\n'
-                log('', hour, event)
-            else:
-                self.wfile.write(b"SIP/2.0 400 Bad Request"
-                                 + b"\r\n\r\n")
-                #log evento y hora
-                hour = time.time()
-                event = " Sent to " + IP_Client + ':' + str(Port_Client)
-                event += ':' + "SIP/2.0 400 Bad Request" + '\r\n'
                 log('', hour, event)
 
 
