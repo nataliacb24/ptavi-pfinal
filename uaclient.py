@@ -68,7 +68,8 @@ fichlog = list_XML[4]['path']
 # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
 my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-my_socket.connect((proxy_ip, int(proxy_port))) #conectando con proxy
+# Conectando con proxy
+my_socket.connect((proxy_ip, int(proxy_port)))
 
 
 def log(formato, hora, evento):
@@ -98,7 +99,7 @@ if metodo == "REGISTER":
     if datos_rcv[1] == "401":
         Peticion = metodo + " sip:" + username + ":" + ua_port
         Peticion += " SIP/2.0" + "\r\n" + "Expires: " + option + "\r\n"
-        Peticion += "Authorization: Digest response=" 
+        Peticion += "Authorization: Digest response="
         Peticion += "123123212312321212123 \r\n"
         print("Enviando: ", Peticion)
         my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n\r\n')
@@ -125,11 +126,11 @@ elif metodo == "INVITE":
     my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n')
     data = my_socket.recv(1024)
     print('Recibido -- ', data.decode('utf-8'))
-    datos_rcv = data.decode('utf-8').split()
-    if datos_rcv[1] == "100" and datos_rcv[4] == "180" and datos_rcv[7] == "200":
+    datosrcv = data.decode('utf-8').split()
+    if datosrcv[1] == "100" and datosrcv[4] == "180" and datosrcv[7] == "200":
         metodo = "ACK"
-        Ip_Serv = datos_rcv[13]
-        Port_Serv = datos_rcv[17]
+        Ip_Serv = datosrcv[13]
+        Port_Serv = datosrcv[17]
         Peticion = metodo + " sip:" + option + " SIP/2.0 \r\n"
         print("Enviando: ", Peticion)
         my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n')
