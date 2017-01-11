@@ -105,9 +105,11 @@ class ServerHandler(socketserver.DatagramRequestHandler):
                 # print(self.dicc_rtp['Ip_Client'])
                 # print(self.dicc_rtp['Port_Client'])
                 aEjecutar = "mp32rtp -i " + self.dicc_rtp['Ip_Client'] + " -p "
-                aEjecutar += self.dicc_rtp['Port_Client'] + ' < ' + fichero_audio
+                aEjecutar += self.dicc_rtp['Port_Client'] + ' < '
+                aEjecutar += fichero_audio
                 print("Vamos a ejecutar", aEjecutar)
                 os.system(aEjecutar)
+                print("Fin RTP \r\n")
             elif metodo == "BYE":
                 self.wfile.write(b"SIP/2.0 200 OK" + b"\r\n\r\n")
                 # hora y lo que ha pasado en log: enviando a
@@ -120,7 +122,7 @@ if __name__ == "__main__":
 
 
     serv = socketserver.UDPServer((ua_ip, int(ua_port)), ServerHandler)
-    print("Listening")
+    print("Listening \r\n")
     # hora y lo que pasa en log
     # log
     serv.serve_forever()

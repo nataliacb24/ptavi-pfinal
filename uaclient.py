@@ -83,7 +83,8 @@ if metodo == "REGISTER":
     if datos_rcv[1] == "401":
         Peticion = metodo + " sip:" + username + ":" + ua_port
         Peticion += " SIP/2.0" + "\r\n" + "Expires: " + option + "\r\n"
-        Peticion += "Authorization: Digest response=" + "123123212312321212123 \r\n"
+        Peticion += "Authorization: Digest response=" 
+        Peticion += "123123212312321212123 \r\n"
         print("Enviando: ", Peticion)
         my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n\r\n')
         # hora y lo que pasa en el log: enviando desde..
@@ -103,6 +104,7 @@ elif metodo == "INVITE":
     print("Enviando: ", Peticion)
     my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n')
     data = my_socket.recv(1024)
+    print('Recibido -- ', data.decode('utf-8'))
     datos_rcv = data.decode('utf-8').split()
     if datos_rcv[1] == "100" and datos_rcv[4] == "180" and datos_rcv[7] == "200":
         metodo = "ACK"
@@ -115,10 +117,6 @@ elif metodo == "INVITE":
         aEjecutar += fichero_audio
         print("Vamos a ejecutar", aEjecutar)
         os.system(aEjecutar)
-        my_socket.send(bytes(Peticion, 'utf-8') + b'\r\n\r\n')
-        data = my_socket.recv(1024)
-        print('Recibido -- ', data.decode('utf-8'))
-        datos_rcv = data.decode('utf-8').split()
         # hora y lo que pasa en el log: enviando desde..
         # log
 elif metodo == 'BYE':
