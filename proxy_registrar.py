@@ -70,17 +70,6 @@ def log(formato, hora, evento):
     fich_log.close()
 
 
-#def password(dircc_user):
-#    fich = open("passwords")
-#    datos = fich.readlines()
-#    for linea in datos:
-#        if linea != "":
-#            user = linea.split(" ")
-#           if user[0] == dircc_user:
-#              passwd = user[1]
-# return passwd
-
-
 class SIPRegisterHandler(socketserver.DatagramRequestHandler):
 
     DiccUser = {}
@@ -160,16 +149,6 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     if expires == '0':
                         del self.DiccUser[address_client]
                 if len(lista) == 8:
-                    #contr = password(address_client)
-                    #contr = contr[:-1]
-                    #Autoriza = lista[7].split("=")[1]
-                    #nonce = self.Dicc[address_client]
-                    #nonce_bytes = bytes(str(nonce), 'utf-8')
-                    #contrsñ = bytes(contr, 'utf-8')
-                    #m = hashlib.md5()
-                    #m.update(contrsñ + nonce_bytes)
-                    #response = m.hexdigest()
-                    #if response == Autoriza:
                     self.wfile.write(b"SIP/2.0 200 OK" + b"\r\n\r\n")
                     #log evento hora
                     hour = time.time()
